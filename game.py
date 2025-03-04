@@ -19,7 +19,6 @@ class Game:
 
         self.points = 100
 
-
         self.assets = {
             'playButton': loadImage('buttons/play.png', 6),
             'quitButton': loadImage('buttons/quit.png', 6),
@@ -97,7 +96,6 @@ class Game:
 
         enter = False
 
-
         text_box = TextBox(500, 300)
 
         difficulty_text = self.font.render(difficulty, True, "black")
@@ -108,10 +106,9 @@ class Game:
         for i in letters:
             guessed_letters.append("_")
 
-        print(guessed_letters)
 
         guessed_word_text = self.font.render("".join(guessed_letters), True, "black")
-        print(word)
+
 
         you_win_text = self.font.render("You Win!", True, (0, 0, 0))
         you_lose_text = self.font.render("You Lose!", True, (0, 0, 0))
@@ -132,7 +129,7 @@ class Game:
             guessed_word_text = self.font.render("".join(guessed_letters), True, "black")
 
             length = len(text_box.text)
-            if enter and length > 0:
+            if enter and length > 0 and not win_state == "win":
                 if length == 1 and text_box.text in letters:
                     
                     print(list(filter(lambda i: letters[i] == text_box.text, range(len(letters)))))
@@ -142,11 +139,13 @@ class Game:
                     if guessed_letters == letters:
                         print("you min")
                         win_state = "win"
+                        self.points += 100
                     text_box.text = ""
                     
                 elif length > 1 and text_box.text == word: 
                     print('win')
                     win_state = "win"
+                    self.points += 100
                 else:
                     text_box.text = ""
                     self.points -= 10
@@ -160,13 +159,15 @@ class Game:
             self.screen.fill('white')
 
             self.screen.blit(difficulty_text, (500, 20))
-            self.screen.blit(word_text, (500, 40))
+            #self.screen.blit(word_text, (500, 40))
             self.screen.blit(guessed_word_text, (500, 200))
             text_box.draw(self.screen, self.font)
             self.screen.blit(points_text, (200, 200))
 
             if win_state == "win":
                 self.screen.blit(you_win_text, (500, 300))
+                
+                
             elif win_state == "lose":
                 self.screen.blit(you_lose_text, (500, 300))
             
@@ -177,5 +178,8 @@ class Game:
             self.clock.tick(60)
 
 
+
 game = Game()
 game.menu()
+
+
