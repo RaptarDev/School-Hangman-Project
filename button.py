@@ -33,7 +33,7 @@ class Button:
 
 class TextBox:
     def __init__(self, x, y, default_text=''):
-        width = 200
+        width = 300
         height = 100
         self.rect = pygame.rect.Rect(x, y, width, height)
         self.rect.topleft = (x, y)
@@ -92,4 +92,32 @@ class TextBox:
         
             else:
                 self.text += event.unicode                
+
+
+class key(Button):
+    def __init__(self, x, y, image, scale, letter: str, font: str, image_pressed):
+        super().__init__(x, y, image, scale)
+        self.image_unpressed = self.image
+        self.image_pressed = pygame.transform.scale(image_pressed, (int(image_pressed.get_width() * scale), int(image_pressed.get_height() * scale)))
+        self.letter = letter
+        font_ = pygame.font.Font(font, 90)
+        self.text = font_.render(letter, False, (255, 255, 255))
+
+        self.pressed = False
+
+    
+    def draw(self, surface: pygame.Surface):
+        action = super().draw(surface)
+        if pygame.key.get_pressed()[ord(self.letter)]:
+            action = True
+        if self.pressed:
+            self.image = self.image_pressed
+        else:
+            self.image = self.image_unpressed
+        surface.blit(self.text, (self.rect.centerx - self.text.get_width() // 2, self.rect.centery - self.text.get_height() // 2 - 15 + self.pressed * 10))
+        return action
+        
+        
+
+        
         
