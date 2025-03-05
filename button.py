@@ -12,23 +12,37 @@ class Button:
         self.rect.topleft = (x, y)
         self.clicked = False
 
+        self.overlay_surface = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+        self.overlay_surface.fill((255, 255, 255, 20))
+
     def draw(self, surface):
         action = False
         # get mouse position
         pos = pygame.mouse.get_pos()
-
-        # check mouseover and clicked conditions
         if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+            print('hover')
+            if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
                 self.clicked = True
+                print('click')
+            if pygame.mouse.get_pressed()[0] == 0 and self.clicked:
+                self.clicked = False
                 action = True
+            # draw overlay
+            #pygame.draw.rect(surface, (255, 255, 255, 20), self.rect, 5)
+            #surface.blit(self.overlay_surface, (self.rect.x, self.rect.y))
 
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
-
+        
         # draw button on screen
         surface.blit(self.image, (self.rect.x, self.rect.y))
+        # check mouseover 
+        if self.rect.collidepoint(pos):
+            # draw overlay
+            pygame.draw.rect(surface, (255, 255, 255, 20), self.rect, 5)
+            surface.blit(self.overlay_surface, (self.rect.x, self.rect.y))
 
+       
         return action
 
 class TextBox:
@@ -108,13 +122,16 @@ class key(Button):
     
     def draw(self, surface: pygame.Surface):
         action = super().draw(surface)
+        if action:
+            pass
         if pygame.key.get_pressed()[ord(self.letter)]:
             action = True
         if self.pressed:
             self.image = self.image_pressed
         else:
             self.image = self.image_unpressed
-        surface.blit(self.text, (self.rect.centerx - self.text.get_width() // 2, self.rect.centery - self.text.get_height() // 2 - 15 + self.pressed * 10))
+        surface.blit(self.text, (self.rect.centerx - self.text.get_width() // 2, \
+                                  self.rect.centery - self.text.get_height() // 2 - 15 + self.pressed * 10))
         return action
         
         

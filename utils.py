@@ -1,8 +1,7 @@
 import os
-
 import pygame
-
 import random
+import json
 
 BASE_IMG_PATH = 'data/images/'
 
@@ -16,7 +15,7 @@ def loadImages(path, scale = 1):
     images = []
     for img_name in os.listdir(BASE_IMG_PATH + path):
         images.append(loadImage(path + '/' + img_name, scale))
-
+    print(images)
     return images
 
 class Animation:
@@ -47,3 +46,10 @@ def randomWordFromFile(file_path):
     lines = f.readlines()
     return random.sample(lines, 1)
 
+def loadSave(saveFile, base_data):
+    try:
+        f = open(saveFile, 'r')
+        return json.load(f)
+    except:
+        json.dump(base_data, open(saveFile, 'w'))
+        return base_data
