@@ -12,12 +12,14 @@ class Game:
         pygame.init()
 
         self.screen = pygame.display.set_mode((1280, 720))
+        self.screen.set_colorkey((0, 0, 0))
         pygame.display.set_caption("Hangman")   
         self.clock = pygame.time.Clock()
 
         # Loads The fonts
-        self.title_font = pygame.font.Font('data/font/PixelOperator-Bold.ttf', 120)
-        self.small_font = pygame.font.Font('data/font/PixelOperator-Bold.ttf', 80)
+        self.title_font = pygame.font.Font('data/font/Anarchaos.otf', 120)
+        self.small_font = pygame.font.Font('data/font/Anarchaos.otf', 80)
+        self.underline_font = pygame.font.Font('data/font/Storm Gust.ttf', 120)
 
         # Checks if the game is running
         self.running = True
@@ -26,15 +28,26 @@ class Game:
 
         # Loads the assets
         self.assets = {
-            'playButton': loadImage('buttons/play.png', 6),
-            'quitButton': loadImage('buttons/quit.png', 6),
-            'menuButton': loadImage('buttons/menu.png', 4.5),
+            'playButton': loadImage('buttons/play.png', 1),
+            'quitButton': loadImage('buttons/quit.png', 1),
+            'menuButton': loadImage('buttons/menu.png', 1),
 
-            'key': loadImage('buttons/key.png', 5),
-            'key_pressed': loadImage('buttons/key_clicked.png', 5),
+            'easyButton': loadImage('buttons/easy.png', 1),
+            'mediumButton': loadImage('buttons/medium.png', 1),
+            'hardButton': loadImage('buttons/hard.png', 1),
 
-            "hangman": loadImages('hangman', 8),
+            'key': loadImage('buttons/key.png', 1),
+            'key_pressed': loadImage('buttons/key_clicked.png', 1),
+            'select': loadImage('buttons/select.png', 1),
+            'select_big': loadImage('buttons/select-big.png', 1),
+
+            "hangman": loadImages('hangman', 1),
+
         }
+        for i in self.assets.values():
+            if type(i) == list:
+                continue
+            i.set_colorkey((0, 0, 0))
 
         # Loads the save data
         self.data = {
@@ -69,9 +82,9 @@ class Game:
 
     def menu(self):
         # Sets up the buttons
-        playButton = Button((self.screen.get_width() - 180) / 2, 250, self.assets['playButton'], 1)
-        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1)
-        menuButton = Button((self.screen.get_width() - 180) / 2, 600, self.assets['menuButton'], 1)
+        playButton = Button((self.screen.get_width() - 180) / 2, 250, self.assets['playButton'], 1, self.assets['select_big'])
+        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'])
+        menuButton = Button((self.screen.get_width() - 180) / 2, 600, self.assets['menuButton'], 1, self.assets['select_big'])
 
         while self.running:
             for event in pygame.event.get():
@@ -100,9 +113,9 @@ class Game:
     def difficultyMenu(self):
         select_diff_text = self.title_font.render("Select Difficulty", True, "white")
 
-        easyButton = Button((self.screen.get_width() - self.assets['playButton'].get_width()) / 2, 300, self.assets['playButton'], 1)
-        mediumButton = Button((self.screen.get_width() - self.assets['playButton'].get_width()) / 2, 450, self.assets['playButton'], 1)
-        hardButton = Button((self.screen.get_width() - self.assets['playButton'].get_width()) / 2, 600, self.assets['playButton'], 1)
+        easyButton = Button((self.screen.get_width() - self.assets['easyButton'].get_width()) / 2, 300, self.assets['easyButton'], 1, self.assets['select_big'])
+        mediumButton = Button((self.screen.get_width() - self.assets['mediumButton'].get_width()) / 2, 450, self.assets['mediumButton'], 1, self.assets['select_big'])
+        hardButton = Button((self.screen.get_width() - self.assets['hardButton'].get_width()) / 2, 600, self.assets['hardButton'], 1, self.assets['select_big'])
 
         while self.running:
             for event in pygame.event.get():
@@ -149,8 +162,10 @@ class Game:
         
         # Sets up the base for where the letters will be displayed
         word_length = len(word)
-        empty_text = self.title_font.render("_", False, "white")
+        empty_text = self.underline_font.render("_", False, "white")
         guess_letters_texts = []
+
+        
 
         # Sets up the wrong guesses
         wrong_guesses = 0
@@ -167,11 +182,14 @@ class Game:
         row3 = "zxcvbnm"
         keyboard = {}
         for i, k in enumerate(row1):
-            keyboard[k] = key(100 + i * 110, 380, self.assets['key'], 1, k, 'data/font/PixelOperator-Bold.ttf', self.assets['key_pressed'])
+            keyboard[k] = key(100 + i * 110, 380, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'])
         for i, k in enumerate(row2):
-            keyboard[k] = key(130 + i * 110, 490, self.assets['key'], 1, k, 'data/font/PixelOperator-Bold.ttf', self.assets['key_pressed'])
+            keyboard[k] = key(130 + i * 110, 490, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'])
         for i, k in enumerate(row3):
-            keyboard[k] = key(160 + i * 110, 600, self.assets['key'], 1, k, 'data/font/PixelOperator-Bold.ttf', self.assets['key_pressed'])
+            keyboard[k] = key(160 + i * 110, 600, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'])
+
+        # Create a new surface for the empty_texts
+        empty_text_surface = pygame.Surface((80 * word_length, 200), pygame.SRCALPHA)
 
         # Main game loop
         while self.running:
@@ -208,10 +226,12 @@ class Game:
             self.screen.blit(difficulty_text, ((self.screen.get_width() - difficulty_text.get_width()) / 2 , 20))
 
             # Draws the word
+            empty_text_surface.fill((0, 0, 0, 0))  # Clear the surface
             for i in range(word_length):
-                self.screen.blit(empty_text, ((self.screen.get_width() - (empty_text.get_width() + 17) * word_length ) / 2 + i * 60, 100))
-                self.screen.blit(guess_letters_texts[i], ((self.screen.get_width() - (empty_text.get_width() + 19) * word_length) / 2 + i * 60, 100))
-
+                empty_text_surface.blit(empty_text, (i * 80, 0))
+                self.screen.blit(guess_letters_texts[i], ((self.screen.get_width() - (empty_text.get_width()) * word_length) / 2 + i * 80, 100))
+            self.screen.blit(empty_text_surface, ((self.screen.get_width() - empty_text_surface.get_width()) / 2, 90))
+            
             # Draws the text box
             text_box.draw(self.screen, self.title_font)
 
@@ -268,9 +288,9 @@ class Game:
         overlay.set_alpha(128)  # Set transparency level (0-255)
 
         # Sets up the buttons
-        playButton = Button((self.screen.get_width() - 180) / 2, 320, self.assets['playButton'], 1)
-        menuButton = Button((self.screen.get_width() - 180) / 2, 440, self.assets['menuButton'], 1)
-        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1)
+        playButton = Button((self.screen.get_width() - 180) / 2, 320, self.assets['playButton'], 1, self.assets['select_big'])
+        menuButton = Button((self.screen.get_width() - 180) / 2, 440, self.assets['menuButton'], 1, self.assets['select_big'])
+        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'])
 
         # Main loop
         while self.running:
@@ -297,7 +317,7 @@ class Game:
             # Draw Hangman
             hangman_image = pygame.transform.scale_by(self.assets['hangman'][7], 1.5)
             hangman_image.set_colorkey((0, 0, 0))            
-            self.screen.blit(hangman_image, (200, 280))
+            self.screen.blit(hangman_image, (200, 300))
 
             # Checks if the buttons are clicked
             if playButton.clicked:

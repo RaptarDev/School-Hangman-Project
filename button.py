@@ -4,7 +4,7 @@ from pygame.constants import KEYDOWN
 
 # button class
 class Button:
-    def __init__(self, x, y, image, scale):
+    def __init__(self, x, y, image, scale, select_image:pygame.Surface=None):
         width = image.get_width()
         height = image.get_height()
         self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
@@ -12,6 +12,7 @@ class Button:
         self.rect.topleft = (x, y)
         self.clicked = False
 
+        self.select_image = select_image
         self.overlay_surface = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
         self.overlay_surface.fill((255, 255, 255, 20))
 
@@ -39,7 +40,9 @@ class Button:
         # check mouseover 
         if self.rect.collidepoint(pos):
             # draw overlay
-            pygame.draw.rect(surface, (255, 255, 255, 20), self.rect, 5)
+            if self.select_image:
+                surface.blit(self.select_image, (self.rect.x, self.rect.bottom - 30))
+            #pygame.draw.rect(surface, (255, 255, 255, 20), self.rect, 5)
             surface.blit(self.overlay_surface, (self.rect.x, self.rect.y))
 
        
@@ -109,11 +112,12 @@ class TextBox:
 
 
 class key(Button):
-    def __init__(self, x, y, image, scale, letter: str, font: str, image_pressed):
+    def __init__(self, x, y, image, scale, letter: str, font: str, image_pressed, select_image:pygame.Surface=None):
         super().__init__(x, y, image, scale)
         self.image_unpressed = self.image
         self.image_pressed = pygame.transform.scale(image_pressed, (int(image_pressed.get_width() * scale), int(image_pressed.get_height() * scale)))
         self.letter = letter
+        self.select_image = select_image
         font_ = pygame.font.Font(font, 90)
         self.text = font_.render(letter, False, (255, 255, 255))
 
