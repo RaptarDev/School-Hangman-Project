@@ -21,16 +21,11 @@ class Button:
         # get mouse position
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
-            print('hover')
             if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
                 self.clicked = True
-                print('click')
             if pygame.mouse.get_pressed()[0] == 0 and self.clicked:
                 self.clicked = False
                 action = True
-            # draw overlay
-            #pygame.draw.rect(surface, (255, 255, 255, 20), self.rect, 5)
-            #surface.blit(self.overlay_surface, (self.rect.x, self.rect.y))
 
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
@@ -49,7 +44,7 @@ class Button:
         return action
 
 class TextBox:
-    def __init__(self, x, y, default_text=''):
+    def __init__(self, x, y, default_text='', background_image=None):
         width = 300
         height = 100
         self.rect = pygame.rect.Rect(x, y, width, height)
@@ -60,6 +55,9 @@ class TextBox:
         self.color_active = pygame.Color('lightskyblue3') 
         self.color_passive = pygame.Color('chartreuse4') 
         self.color = self.color_passive 
+
+        self.background_image = background_image
+
 
     def draw(self, surface, font):
         action = False
@@ -77,9 +75,11 @@ class TextBox:
                 self.color = self.color_passive
         
 
-         # draw rectangle and argument passed which should 
+        # draw rectangle and argument passed which should 
         # be on screen 
-        pygame.draw.rect(surface, self.color, self.rect) 
+        if self.background_image:
+            surface.blit(self.background_image, (self.rect.x, self.rect.y + 20))
+        #pygame.draw.rect(surface, self.color, self.rect) 
     
         text_surface = font.render(self.text, True, (255, 255, 255)) 
         

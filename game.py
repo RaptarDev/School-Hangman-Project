@@ -41,6 +41,8 @@ class Game:
             'select': loadImage('buttons/select.png', 1),
             'select_big': loadImage('buttons/select-big.png', 1),
 
+            'text_box': loadImage('buttons/text_box.png', 1),
+
             "hangman": loadImages('hangman', 1),
 
         }
@@ -149,7 +151,7 @@ class Game:
         enter = False
 
         # Sets up the text box
-        text_box = TextBox((self.screen.get_width() - 300) / 2, 250)
+        text_box = TextBox((self.screen.get_width() - 300) / 2, 250, '', self.assets['text_box'])
 
         difficulty_text = self.title_font.render(difficulty, True, "white")
 
@@ -164,8 +166,6 @@ class Game:
         word_length = len(word)
         empty_text = self.underline_font.render("_", False, "white")
         guess_letters_texts = []
-
-        
 
         # Sets up the wrong guesses
         wrong_guesses = 0
