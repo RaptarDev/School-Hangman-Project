@@ -4,7 +4,7 @@ from pygame.constants import KEYDOWN
 
 # button class
 class Button:
-    def __init__(self, x, y, image, scale, select_image:pygame.Surface=None):
+    def __init__(self, x, y, image, scale, select_image:pygame.Surface, sound:pygame.mixer.Sound):
         width = image.get_width()
         height = image.get_height()
         self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
@@ -16,12 +16,15 @@ class Button:
         self.overlay_surface = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
         self.overlay_surface.fill((255, 255, 255, 20))
 
+        self.sound = sound
+
     def draw(self, surface):
         action = False
         # get mouse position
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
+                self.sound.play()
                 self.clicked = True
             if pygame.mouse.get_pressed()[0] == 0 and self.clicked:
                 self.clicked = False
@@ -44,7 +47,7 @@ class Button:
         return action
 
 class TextBox:
-    def __init__(self, x, y, default_text='', background_image=None):
+    def __init__(self, x, y, default_text, background_image, sound):
         width = 300
         height = 100
         self.rect = pygame.rect.Rect(x, y, width, height)
@@ -58,6 +61,8 @@ class TextBox:
 
         self.background_image = background_image
 
+        self.sound = sound
+
 
     def draw(self, surface, font):
         action = False
@@ -66,6 +71,7 @@ class TextBox:
         # check mouseover and clicked conditions
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.sound.play()
                 self.clicked = True
                 action = True
                 self.color = self.color_active
@@ -112,8 +118,8 @@ class TextBox:
 
 
 class key(Button):
-    def __init__(self, x, y, image, scale, letter: str, font: str, image_pressed, select_image:pygame.Surface=None):
-        super().__init__(x, y, image, scale)
+    def __init__(self, x, y, image, scale, letter: str, font: str, image_pressed, select_image:pygame.Surface, sound:pygame.mixer.Sound):
+        super().__init__(x, y, image, scale, select_image, sound=sound)
         self.image_unpressed = self.image
         self.image_pressed = pygame.transform.scale(image_pressed, (int(image_pressed.get_width() * scale), int(image_pressed.get_height() * scale)))
         self.letter = letter

@@ -10,6 +10,7 @@ import numpy as np
 class Game:
     def __init__(self):
         pygame.init()
+        pygame.mixer.init()
 
         self.screen = pygame.display.set_mode((1280, 720))
         self.screen.set_colorkey((0, 0, 0))
@@ -50,16 +51,32 @@ class Game:
             if type(i) == list:
                 continue
             i.set_colorkey((0, 0, 0))
+        
+        self.sounds = {
+            'background_music': pygame.mixer.Sound("data/sounds/gameovermachinehead.mp3"),
+            'button_click': pygame.mixer.Sound("data/sounds/click.wav"),
+            'key_click': [pygame.mixer.Sound("data/sounds/key_click-01.wav"),
+                          pygame.mixer.Sound("data/sounds/key_click-02.wav"),
+                          pygame.mixer.Sound("data/sounds/key_click-03.wav"),
+                          pygame.mixer.Sound("data/sounds/key_click-04.wav"),
+                        ]
+        }
 
         # Loads the save data
         self.data = {
-            "highscore": 0,
+            "highscore_easy": [],
+            "highscore_medium": [],
+            "highscore_hard": [],
         }
+           
         self.data = loadSave("data/save.json", self.data)
+
+        self.name = ""
 
 
     def checkLetter(self, length, text, letters, guessed_letters, word):
         win_state = ""
+        # Checks if the letter is in the word
         if length == 1 and text in letters:
             print(list(filter(lambda i: letters[i] == text, range(len(letters)))))
             for i in list(filter(lambda i: letters[i] == text, range(len(letters)))):
@@ -70,11 +87,12 @@ class Game:
                 win_state = "win"
                 self.points += 100
                 text = ""
-                    
+        # Checks if the word is the same as the guessed word
         elif length > 1 and text == word: 
                 print('win')
                 win_state = "win"
                 self.points += 100
+        # if the letter is not in the word
         else:
                 text = ""
                 self.points -= 10
@@ -83,10 +101,19 @@ class Game:
         
 
     def menu(self):
+        title = self.title_font.render("HAngman", True, "white")
+
         # Sets up the buttons
-        playButton = Button((self.screen.get_width() - 180) / 2, 250, self.assets['playButton'], 1, self.assets['select_big'])
-        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'])
-        menuButton = Button((self.screen.get_width() - 180) / 2, 600, self.assets['menuButton'], 1, self.assets['select_big'])
+        playButton = Button((self.screen.get_width() - 180) / 2, 250, self.assets['playButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        menuButton = Button((self.screen.get_width() - 180) / 2, 600, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        highscoreButton = Button((self.screen.get_width() - 180) / 2 - 100, 400, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        rulesButton = Button((self.screen.get_width() - 180) / 2 + 100, 400, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+
+        # Set up music 
+        self.sounds['background_music'].play(-1)
+        self.sounds['background_music'].set_volume(0.1)
+
 
         while self.running:
             for event in pygame.event.get():
@@ -96,13 +123,22 @@ class Game:
             # Draws the backgound 
             self.screen.fill('black')
 
+            # Draws the title
+            self.screen.blit(title, ((self.screen.get_width() - title.get_width()) / 2, 20))
+
             # Draws the buttons
             playButton.draw(self.screen)
+            highscoreButton.draw(self.screen)
+            rulesButton.draw(self.screen)
             quitButton.draw(self.screen)
 
             # Checks if the buttons are clicked
             if playButton.clicked:
-                self.difficultyMenu()
+                self.inputName()
+            elif highscoreButton.clicked:
+                self.highscoreMenu()
+            elif rulesButton.clicked:
+                self.rulesMenu()
             if quitButton.clicked:
                 self.running = False
             
@@ -111,13 +147,160 @@ class Game:
             # Caps Frames to 60
             self.clock.tick(60)
 
+    def rulesMenu(self):
+        # Sets up the text
+        backButton = Button(30, 600, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+
+        # Sets up the text
+        rules_text = self.title_font.render("Rules", True, "white")
+        
+        
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+            # Draws the backgound object
+            self.screen.fill('black')
+
+            # Draws the buttons
+            backButton.draw(self.screen)
+
+            # Draws the text
+            self.screen.blit(rules_text, ((self.screen.get_width() - rules_text.get_width()) / 2, 20))
+
+            # Draws the rules
+            rules = [
+                "1. You have 100 points to start with",
+                "2. For every correct letter you get 10 points",
+                "3. For every wrong letter you lose 10 points",
+                "4. If you lose all your points you lose",
+                "5. If you guess the word you win",
+                "6. You can guess the word by typing it in the text box",
+                "7. You can guess a letter by clicking the keyboard",
+            ]
+            for i, rule in enumerate(rules):
+                rule_text = self.small_font.render(rule, True, "white")
+                rule_text = pygame.transform.scale_by(rule_text, 0.5)
+                self.screen.blit(rule_text, (20, 150 + i * 60))
+
+            # Checks if the buttons are clicked
+            if backButton.clicked:
+                self.menu()
+
+            pygame.display.update()
+
+            # Caps Frames to 60
+            self.clock.tick(60)
+
+
+    def highscoreMenu(self):
+        # Sets up the buttons
+        backButton = Button(30, 600, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        
+        # Render Highscores Title texts 
+        highscore_text = self.title_font.render("Highscore", True, "white")
+        easy_text = self.title_font.render("Easy", True, "white")
+        medium_text = self.title_font.render("Medium", True, "white")
+        hard_text = self.title_font.render("Hard", True, "white")
+
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+            # Draws the backgound object
+            self.screen.fill('black')
+
+            # Draws the buttons
+            backButton.draw(self.screen)
+
+            # Draws the Title text
+            self.screen.blit(highscore_text, ((self.screen.get_width() - highscore_text.get_width()) / 2, 20))
+
+            # Calculate the horizontal positions for the texts
+            spacing = self.screen.get_width() // 4
+            easy_x = spacing - easy_text.get_width() // 2 - 100
+            medium_x = 2 * spacing - medium_text.get_width() // 2
+            hard_x = 3 * spacing - hard_text.get_width() // 2 + 100
+
+            # Draw the texts at the calculated positions
+            self.screen.blit(easy_text, (easy_x, 150))
+            self.screen.blit(medium_text, (medium_x, 150))
+            self.screen.blit(hard_text, (hard_x, 150))
+
+            # Draws the highscores
+            # easy 
+            for i, score in enumerate(self.data['highscore_easy']):
+                score_text = self.small_font.render(f"{score['name']} - {score['score']}", True, "white")
+                self.screen.blit(score_text, (easy_x, 250 + i * 80))
+            # medium
+            for i, score in enumerate(self.data['highscore_medium']):
+                score_text = self.small_font.render(f"{score['name']} - {score['score']}", True, "white")
+                self.screen.blit(score_text, (medium_x, 250 + i * 80))
+            # hard      
+            for i, score in enumerate(self.data['highscore_hard']):
+                score_text = self.small_font.render(f"{score['name']} - {score['score']}", True, "white")
+                self.screen.blit(score_text, (hard_x, 250 + i * 80))
+
+            # Checks if the buttons are clicked
+            if backButton.clicked:
+                self.menu()
+
+            pygame.display.update()
+
+            # Caps Frames to 60
+            self.clock.tick(60)
+
+
+    def inputName(self):
+        # Sets up the text
+        NameTitle = self.title_font.render("Enter Your Name", True, "white")
+
+        # Sets up the text box
+        nameBox = TextBox((self.screen.get_width() - 300) / 2, 250, '', self.assets['text_box'], sound=self.sounds['button_click'])
+        nameBox.clicked = True
+        enter = False
+
+
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+                # Checks if the text box is clicked
+                if nameBox.clicked:
+                    enter = nameBox.text_update(event)
+
+            # Checks if the enter key is pressed
+            if enter:
+                self.name = nameBox.text
+                self.difficultyMenu()
+            
+            # Draws the backgound object
+            self.screen.fill('black')
+
+            # Draws the text box
+            nameBox.draw(self.screen, self.title_font)
+
+            # Draws the text
+            self.screen.blit(NameTitle, ((self.screen.get_width() - NameTitle.get_width()) / 2, 20))
+
+            pygame.display.update()
+
+            # Caps Frames to 60
+            self.clock.tick(60)
+
 
     def difficultyMenu(self):
+        time.sleep(0.1)
+        # Sets up the text
         select_diff_text = self.title_font.render("Select Difficulty", True, "white")
 
-        easyButton = Button((self.screen.get_width() - self.assets['easyButton'].get_width()) / 2, 300, self.assets['easyButton'], 1, self.assets['select_big'])
-        mediumButton = Button((self.screen.get_width() - self.assets['mediumButton'].get_width()) / 2, 450, self.assets['mediumButton'], 1, self.assets['select_big'])
-        hardButton = Button((self.screen.get_width() - self.assets['hardButton'].get_width()) / 2, 600, self.assets['hardButton'], 1, self.assets['select_big'])
+        # Sets up the buttons
+        easyButton = Button((self.screen.get_width() - self.assets['easyButton'].get_width()) / 2, 300, self.assets['easyButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        mediumButton = Button((self.screen.get_width() - self.assets['mediumButton'].get_width()) / 2, 450, self.assets['mediumButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        hardButton = Button((self.screen.get_width() - self.assets['hardButton'].get_width()) / 2, 600, self.assets['hardButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
 
         while self.running:
             for event in pygame.event.get():
@@ -151,7 +334,7 @@ class Game:
         enter = False
 
         # Sets up the text box
-        text_box = TextBox((self.screen.get_width() - 300) / 2, 250, '', self.assets['text_box'])
+        text_box = TextBox((self.screen.get_width() - 300) / 2, 250, '', self.assets['text_box'], sound=self.sounds['button_click'])
 
         difficulty_text = self.title_font.render(difficulty, True, "white")
 
@@ -182,11 +365,11 @@ class Game:
         row3 = "zxcvbnm"
         keyboard = {}
         for i, k in enumerate(row1):
-            keyboard[k] = key(100 + i * 110, 380, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'])
+            keyboard[k] = key(100 + i * 110, 380, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'], sound=self.sounds['key_click'][random.randint(0, 3)])
         for i, k in enumerate(row2):
-            keyboard[k] = key(130 + i * 110, 490, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'])
+            keyboard[k] = key(130 + i * 110, 490, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'], sound=self.sounds['key_click'][random.randint(0, 3)])
         for i, k in enumerate(row3):
-            keyboard[k] = key(160 + i * 110, 600, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'])
+            keyboard[k] = key(160 + i * 110, 600, self.assets['key'], 1, k, 'data/font/Anarchaos.otf', self.assets['key_pressed'], self.assets['select'], sound=self.sounds['key_click'][random.randint(0, 3)])
 
         # Create a new surface for the empty_texts
         empty_text_surface = pygame.Surface((80 * word_length, 200), pygame.SRCALPHA)
@@ -238,9 +421,10 @@ class Game:
             self.screen.blit(points_text, (20, 20))
 
             # Draws the hangman stages
+            
             if wrong_guesses >= 8:
                 win_state = "lose"
-            if wrong_guesses > 0:
+            elif wrong_guesses > 0:
                 hangman_image = self.assets[f'hangman'][wrong_guesses - 1]
                 hangman_image.set_colorkey((0, 0, 0))
                 self.screen.blit(hangman_image, (200, 120))
@@ -259,7 +443,7 @@ class Game:
                 self.mainGameLoop(difficulty)
             elif win_state == "lose":
 
-                self.loseScreen(self.points, word)
+                self.loseScreen(self.points, word, difficulty)
             
             pygame.display.update()
 
@@ -267,8 +451,15 @@ class Game:
             self.clock.tick(60)
     
 
-    def loseScreen(self, points, word):
-        self.data['highscore'] = max(self.data['highscore'], points)
+    def loseScreen(self, points, word, diff):
+        # Adds the highscore to the save file
+        self.data['highscore_' + diff].append({"score":  points, "name": self.name})
+        
+        # Sorts the list by score in descending order and then takes the top 5
+        self.data['highscore_' + diff] = sorted(
+            self.data['highscore_' + diff], key=lambda x: x['score'], reverse=True)[:5]
+        
+        # Saves the data to the save.json file
         json.dump(self.data, open("data/save.json", 'w'))
 
         # Resets the points
@@ -277,7 +468,7 @@ class Game:
         # Sets up the text
         you_lose_text = self.title_font.render("Game Over!", True, (255, 255, 255))
         word_text = self.small_font.render(f"The word was {word}!!", True, (255, 255, 255))
-        highscore_text = self.small_font.render(f"Highscore: {self.data['highscore']}", True, (255, 255, 255))
+        highscore_text = self.small_font.render(f"Highscore: {self.data['highscore_' + diff][0]['score']}", True, (255, 255, 255))
         points_text = self.small_font.render(f"Score: {points}", True, (255, 255, 255))
 
         # Create a semi-transparent overlay
@@ -288,9 +479,9 @@ class Game:
         overlay.set_alpha(128)  # Set transparency level (0-255)
 
         # Sets up the buttons
-        playButton = Button((self.screen.get_width() - 180) / 2, 320, self.assets['playButton'], 1, self.assets['select_big'])
-        menuButton = Button((self.screen.get_width() - 180) / 2, 440, self.assets['menuButton'], 1, self.assets['select_big'])
-        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'])
+        playButton = Button((self.screen.get_width() - 180) / 2, 320, self.assets['playButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        menuButton = Button((self.screen.get_width() - 180) / 2, 440, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
 
         # Main loop
         while self.running:
@@ -331,10 +522,6 @@ class Game:
 
             # Caps Frames to 60
             self.clock.tick(60)
-
-
-    def winScreen():
-        pass
 
 
 
