@@ -32,6 +32,9 @@ class Game:
             'playButton': loadImage('buttons/play.png', 1),
             'quitButton': loadImage('buttons/quit.png', 1),
             'menuButton': loadImage('buttons/menu.png', 1),
+            'backButton': loadImage('buttons/back.png', 1),
+            'rulesButton': loadImage('buttons/rules.png', 1),
+            'highscoreButton': loadImage('buttons/highscores.png', 1),
 
             'easyButton': loadImage('buttons/easy.png', 1),
             'mediumButton': loadImage('buttons/medium.png', 1),
@@ -107,8 +110,8 @@ class Game:
         playButton = Button((self.screen.get_width() - 180) / 2, 250, self.assets['playButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
         quitButton = Button((self.screen.get_width() - 180) / 2, 550, self.assets['quitButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
         menuButton = Button((self.screen.get_width() - 180) / 2, 600, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
-        highscoreButton = Button((self.screen.get_width() - 180) / 2 - 100, 400, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
-        rulesButton = Button((self.screen.get_width() - 180) / 2 + 100, 400, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        highscoreButton = Button((self.screen.get_width() - 180) / 2 - 100, 400, self.assets['highscoreButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        rulesButton = Button((self.screen.get_width() - 180) / 2 + 100, 400, self.assets['rulesButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
 
         # Set up music 
         self.sounds['background_music'].play(-1)
@@ -149,7 +152,7 @@ class Game:
 
     def rulesMenu(self):
         # Sets up the text
-        backButton = Button(30, 600, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        backButton = Button(30, 600, self.assets['backButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
 
         # Sets up the text
         rules_text = self.title_font.render("Rules", True, "white")
@@ -196,7 +199,7 @@ class Game:
 
     def highscoreMenu(self):
         # Sets up the buttons
-        backButton = Button(30, 600, self.assets['menuButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
+        backButton = Button(30, 600, self.assets['backButton'], 1, self.assets['select_big'], sound=self.sounds['button_click'])
         
         # Render Highscores Title texts 
         highscore_text = self.title_font.render("Highscore", True, "white")
